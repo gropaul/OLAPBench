@@ -11,18 +11,21 @@ output: test/duckdb/
 systems:
   - title: DuckDB ${version}
     dbms: duckdb
-    disabled: false
     parameter:
       version:
         - "latest"
   - title: Umbra ${version}
     dbms: umbra
-    disabled: false
     parameter:
       version:
         - "latest"
     settings:
       usedirectio: true
+  - title: ClickHouse ${version}
+    dbms: clickhouse
+    parameter:
+      version:
+        - "latest"
 benchmarks:
   - name: tpch
     scale: 1
