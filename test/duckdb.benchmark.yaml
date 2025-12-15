@@ -1,5 +1,5 @@
 title: DuckDB Test
-repetitions: 1
+repetitions: 5
 warmup: 0
 timeout: 1
 global_timeout: 1
@@ -14,13 +14,15 @@ systems:
     disabled: false
     parameter:
       version:
-        - "0.7.0"
-        - "0.8.0"
-        - "0.9.0"
-        - "1.0.0"
-        - "1.1.0"
-        - "1.2.0"
         - "latest"
+  - title: Umbra ${version}
+    dbms: umbra
+    disabled: false
+    parameter:
+      version:
+        - "latest"
+    settings:
+      usedirectio: true
 benchmarks:
   - name: tpch
-    scale: 0.01
+    scale: 1
