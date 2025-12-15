@@ -1,0 +1,444 @@
+diff --git a/benchmarks/benchmark.py b/benchmarks/benchmark.py
+index fde9fc5..daebbe7 100644
+--- a/benchmarks/benchmark.py
++++ b/benchmarks/benchmark.py
+@@ -136,6 +136,7 @@ def benchmarks() -> dict[str, BenchmarkDescription]:
+     from benchmarks.ssb import ssb
+     from benchmarks.tpcds import tpcds
+     from benchmarks.tpch import tpch
++    from benchmarks.tpch_uuid import tpch_uuid
+     from benchmarks.stackoverflow import stackoverflow
+
+     benchmark_list = [
+@@ -144,7 +145,8 @@ def benchmarks() -> dict[str, BenchmarkDescription]:
+         ssb.SSBDescription,
+         stackoverflow.StackOverflowDescription,
+         tpcds.TPCDSDescription,
+-        tpch.TPCHDescription
++        tpch.TPCHDescription,
++        tpch_uuid.TPCHUUIDDescription
+     ]
+     return {benchmark.get_name(): benchmark for benchmark in benchmark_list}
+
+diff --git a/benchmarks/tpch_uuid/dbgen.sh b/benchmarks/tpch_uuid/dbgen.sh
+new file mode 100755
+index 0000000..9c89d89
+--- /dev/null
++++ b/benchmarks/tpch_uuid/dbgen.sh
+@@ -0,0 +1,88 @@
++#!/usr/bin/env bash
++set -euo pipefail
++SF=${1:-1}
++
++echo "Generating TPC-H UUID database with scale factor $SF"
++
++# Directory for UUID data
++UUID_DIR="data/tpch_uuid/sf$SF"
++TPCH_DIR="data/tpch/sf$SF"
++
++mkdir -p "$UUID_DIR"
++
++# First generate standard TPC-H data if not exists
++if [ ! -d "$TPCH_DIR" ] || [ -z "$(ls -A "$TPCH_DIR" 2>/dev/null)" ]; then
++  echo "Generating base TPC-H data first..."
++  mkdir -p "$TPCH_DIR"
++  cd "data/tpch/"
++  (
++    echo '3045d758d1506ce37a354f1b34d44129  tpch-kit.zip' | md5sum --check --status 2>/dev/null || curl -OL --no-progress-meter https://db.in.tum.de/~fent/dbgen/tpch/tpch-kit.zip
++    echo '3045d758d1506ce37a354f1b34d44129  tpch-kit.zip' | md5sum --check --status
++    unzip -q -u tpch-kit.zip
++
++    cd tpch-kit-852ad0a5ee31ebefeed884cea4188781dd9613a3/dbgen
++    rm -rf ./*.tbl
++    MACHINE=LINUX make -sj "$(nproc)" dbgen 2>/dev/null
++    ./dbgen -f -s "$SF"
++    for table in ./*.tbl; do
++      sed 's/|$//' "$table" >"../../sf$SF/$table"
++      rm "$table"
++    done
++  )
++  cd ../..
++fi
++
++# Convert integer keys to UUID strings if not already done
++if [ -z "$(ls -A "$UUID_DIR" 2>/dev/null)" ]; then
++  echo "Converting integer keys to UUID strings..."
++
++  # Python script to convert keys to UUIDs
++  export SF
++  python3 << 'PYTHON_SCRIPT'
++import os
++import hashlib
++
++SF = os.environ['SF']
++TPCH_DIR = f"data/tpch/sf{SF}"
++UUID_DIR = f"data/tpch_uuid/sf{SF}"
++
++def int_to_uuid(val: int, prefix: str = "") -> str:
++    """Convert an integer to a deterministic 32-character UUID-like string."""
++    # Create a deterministic hash from the integer and prefix
++    data = f"{prefix}:{val}".encode('utf-8')
++    hash_bytes = hashlib.md5(data).hexdigest()
++    return hash_bytes  # Already 32 characters
++
++# Define which columns need to be converted for each table
++# Format: (table_name, [(column_index, key_prefix), ...])
++table_configs = [
++    ("part", [(0, "part")]),  # p_partkey
++    ("region", [(0, "region")]),  # r_regionkey
++    ("nation", [(0, "nation"), (2, "region")]),  # n_nationkey, n_regionkey
++    ("supplier", [(0, "supplier"), (3, "nation")]),  # s_suppkey, s_nationkey
++    ("customer", [(0, "customer"), (3, "nation")]),  # c_custkey, c_nationkey
++    ("partsupp", [(0, "part"), (1, "supplier")]),  # ps_partkey, ps_suppkey
++    ("orders", [(0, "order"), (1, "customer")]),  # o_orderkey, o_custkey
++    ("lineitem", [(0, "order"), (1, "part"), (2, "supplier")]),  # l_orderkey, l_partkey, l_suppkey
++]
++
++for table_name, columns_to_convert in table_configs:
++    input_file = os.path.join(TPCH_DIR, f"{table_name}.tbl")
++    output_file = os.path.join(UUID_DIR, f"{table_name}.tbl")
++
++    print(f"Processing {table_name}...")
++
++    with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
++        for line in infile:
++            fields = line.rstrip('\n').split('|')
++
++            for col_idx, prefix in columns_to_convert:
++                if col_idx < len(fields) and fields[col_idx]:
++                    fields[col_idx] = int_to_uuid(int(fields[col_idx]), prefix)
++
++            outfile.write('|'.join(fields) + '\n')
++
++print("Done!")
++PYTHON_SCRIPT
++
++fi
+diff --git a/benchmarks/tpch_uuid/dbgenSkewed.sh b/benchmarks/tpch_uuid/dbgenSkewed.sh
+new file mode 100755
+index 0000000..e6f63e4
+--- /dev/null
++++ b/benchmarks/tpch_uuid/dbgenSkewed.sh
+@@ -0,0 +1,105 @@
++#!/usr/bin/env bash
++set -euo pipefail
++SF=${1:-1}
++SKEW=${2:-2}
++
++echo "Generating Skewed TPC-H UUID database with scale factor $SF and zipfian skew $SKEW"
++
++# Directory for UUID data
++UUID_DIR="data/tpch_uuid/sf${SF}skew${SKEW}"
++TPCH_DIR="data/tpch/sf${SF}skew${SKEW}"
++
++mkdir -p "$UUID_DIR"
++
++# First generate skewed TPC-H data if not exists
++if [ ! -d "$TPCH_DIR" ] || [ -z "$(ls -A "$TPCH_DIR" 2>/dev/null)" ]; then
++  echo "Generating base skewed TPC-H data first..."
++  mkdir -p "$TPCH_DIR"
++  cd "data/tpch/"
++  (
++    # Originally from: https://download.microsoft.com/download/6/A/A/6AA77214-3402-457E-938A-E7A1C737639A/TPCDSkew.zip
++    echo '99ee2268fabc690cf74684deb2f8559c  TPCDSkew.zip' | md5sum --check --status 2>/dev/null || curl -OL https://db.in.tum.de/~fent/dbgen/tpch/TPCDSkew.zip
++    echo '99ee2268fabc690cf74684deb2f8559c  TPCDSkew.zip' | md5sum --check --status
++    unzip -q -u TPCDSkew.zip
++
++    cd TPCDSkew
++    rm -rf ./*.tbl
++    mv -f makefile.suite makefile
++    sed -i 's/DATABASE=.*/DATABASE=DB2/' makefile
++    sed -i 's/PLATFORM=.*/PLATFORM=LINUX/' makefile
++    sed -i '/CFLAGS/ s/$/ -O3/' makefile
++    echo '
++#ifndef DSS_HUGE
++#define DSS_HUGE        long
++#define HUGE_COUNT      2
++#endif' >>config.h
++    echo '
++#ifdef LINUX
++#define STDLIB_HAS_GETOPT
++#endif /* LINUX */' >>config.h
++    make -sj "$(nproc)" dbgen 2>/dev/null
++    ./dbgen -f -s "$SF" -z "$SKEW"
++    for table in ./*.tbl; do
++      sed 's/|$//' "$table" >"../sf${SF}skew${SKEW}/$table"
++      rm "$table"
++    done
++    ln -s ../sf${SF}skew${SKEW}/order.tbl ../sf${SF}skew${SKEW}/orders.tbl
++  )
++  cd ../..
++fi
++
++# Convert integer keys to UUID strings if not already done
++if [ -z "$(ls -A "$UUID_DIR" 2>/dev/null)" ]; then
++  echo "Converting integer keys to UUID strings..."
++
++  # Python script to convert keys to UUIDs
++  export SF SKEW
++  python3 << 'PYTHON_SCRIPT'
++import os
++import hashlib
++
++SF = os.environ['SF']
++SKEW = os.environ['SKEW']
++TPCH_DIR = f"data/tpch/sf{SF}skew{SKEW}"
++UUID_DIR = f"data/tpch_uuid/sf{SF}skew{SKEW}"
++
++def int_to_uuid(val: int, prefix: str = "") -> str:
++    """Convert an integer to a deterministic 32-character UUID-like string."""
++    # Create a deterministic hash from the integer and prefix
++    data = f"{prefix}:{val}".encode('utf-8')
++    hash_bytes = hashlib.md5(data).hexdigest()
++    return hash_bytes  # Already 32 characters
++
++# Define which columns need to be converted for each table
++# Format: (table_name, [(column_index, key_prefix), ...])
++table_configs = [
++    ("part", [(0, "part")]),  # p_partkey
++    ("region", [(0, "region")]),  # r_regionkey
++    ("nation", [(0, "nation"), (2, "region")]),  # n_nationkey, n_regionkey
++    ("supplier", [(0, "supplier"), (3, "nation")]),  # s_suppkey, s_nationkey
++    ("customer", [(0, "customer"), (3, "nation")]),  # c_custkey, c_nationkey
++    ("partsupp", [(0, "part"), (1, "supplier")]),  # ps_partkey, ps_suppkey
++    ("orders", [(0, "order"), (1, "customer")]),  # o_orderkey, o_custkey
++    ("lineitem", [(0, "order"), (1, "part"), (2, "supplier")]),  # l_orderkey, l_partkey, l_suppkey
++]
++
++for table_name, columns_to_convert in table_configs:
++    input_file = os.path.join(TPCH_DIR, f"{table_name}.tbl")
++    output_file = os.path.join(UUID_DIR, f"{table_name}.tbl")
++
++    print(f"Processing {table_name}...")
++
++    with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
++        for line in infile:
++            fields = line.rstrip('\n').split('|')
++
++            for col_idx, prefix in columns_to_convert:
++                if col_idx < len(fields) and fields[col_idx]:
++                    fields[col_idx] = int_to_uuid(int(fields[col_idx]), prefix)
++
++            outfile.write('|'.join(fields) + '\n')
++
++print("Done!")
++PYTHON_SCRIPT
++
++fi
+diff --git a/benchmarks/tpch_uuid/tpch_uuid.dbschema.json b/benchmarks/tpch_uuid/tpch_uuid.dbschema.json
+new file mode 100644
+index 0000000..51c9730
+--- /dev/null
++++ b/benchmarks/tpch_uuid/tpch_uuid.dbschema.json
+@@ -0,0 +1,135 @@
++{
++  "file_ending": "tbl",
++  "delimiter": "|",
++  "format": "text",
++  "null": "",
++  "tables": [
++    {
++      "name": "part",
++      "columns": [
++        { "name": "p_partkey", "type": "char(32) not null" },
++        { "name": "p_name", "type": "varchar(55) not null" },
++        { "name": "p_mfgr", "type": "char(25) not null" },
++        { "name": "p_brand", "type": "char(10) not null" },
++        { "name": "p_type", "type": "varchar(25) not null" },
++        { "name": "p_size", "type": "integer not null" },
++        { "name": "p_container", "type": "char(10) not null" },
++        { "name": "p_retailprice", "type": "decimal(12,2) not null" },
++        { "name": "p_comment", "type": "varchar(23) not null" }
++      ],
++      "primary key": { "column": "p_partkey" }
++    },
++    {
++      "name": "region",
++      "columns": [
++        { "name": "r_regionkey", "type": "char(32) not null" },
++        { "name": "r_name", "type": "char(25) not null" },
++        { "name": "r_comment", "type": "varchar(152) not null" }
++      ],
++      "primary key": { "column": "r_regionkey" }
++    },
++    {
++      "name": "nation",
++      "columns": [
++        { "name": "n_nationkey", "type": "char(32) not null" },
++        { "name": "n_name", "type": "char(25) not null" },
++        { "name": "n_regionkey", "type": "char(32) not null" },
++        { "name": "n_comment", "type": "varchar(152) not null" }
++      ],
++      "primary key": { "column": "n_nationkey" },
++      "foreign keys": [ { "column": "n_regionkey", "foreign table": "region", "foreign column": "r_regionkey" } ]
++    },
++    {
++      "name": "supplier",
++      "columns": [
++        { "name": "s_suppkey", "type": "char(32) not null" },
++        { "name": "s_name", "type": "char(25) not null" },
++        { "name": "s_address", "type": "varchar(40) not null" },
++        { "name": "s_nationkey", "type": "char(32) not null" },
++        { "name": "s_phone", "type": "char(15) not null" },
++        { "name": "s_acctbal", "type": "decimal(12,2) not null" },
++        { "name": "s_comment", "type": "varchar(101) not null" }
++      ],
++      "primary key": { "column": "s_suppkey" },
++      "foreign keys": [ { "column": "s_nationkey", "foreign table": "nation", "foreign column": "n_nationkey" } ]
++    },
++    {
++      "name": "partsupp",
++      "columns": [
++        { "name": "ps_partkey", "type": "char(32) not null" },
++        { "name": "ps_suppkey", "type": "char(32) not null" },
++        { "name": "ps_availqty", "type": "integer not null" },
++        { "name": "ps_supplycost", "type": "decimal(12,2) not null" },
++        { "name": "ps_comment", "type": "varchar(199) not null" }
++      ],
++      "primary key": { "columns": [ "ps_partkey", "ps_suppkey" ] },
++      "foreign keys": [
++        { "column": "ps_partkey", "foreign table": "part", "foreign column": "p_partkey" },
++        { "column": "ps_suppkey", "foreign table": "supplier", "foreign column": "s_suppkey" }
++      ]
++    },
++    {
++      "name": "customer",
++      "columns": [
++        { "name": "c_custkey", "type": "char(32) not null" },
++        { "name": "c_name", "type": "varchar(25) not null" },
++        { "name": "c_address", "type": "varchar(40) not null" },
++        { "name": "c_nationkey", "type": "char(32) not null" },
++        { "name": "c_phone", "type": "char(15) not null" },
++        { "name": "c_acctbal", "type": "decimal(12,2) not null" },
++        { "name": "c_mktsegment", "type": "char(10) not null" },
++        { "name": "c_comment", "type": "varchar(117) not null" }
++      ],
++      "primary key": { "column": "c_custkey" },
++      "foreign keys": [ { "column": "c_nationkey", "foreign table": "nation", "foreign column": "n_nationkey" } ]
++    },
++    {
++      "name": "orders",
++      "columns": [
++        { "name": "o_orderkey", "type": "char(32) not null" },
++        { "name": "o_custkey", "type": "char(32) not null" },
++        { "name": "o_orderstatus", "type": "char(1) not null" },
++        { "name": "o_totalprice", "type": "decimal(12,2) not null" },
++        { "name": "o_orderdate", "type": "date not null" },
++        { "name": "o_orderpriority", "type": "char(15) not null" },
++        { "name": "o_clerk", "type": "char(15) not null" },
++        { "name": "o_shippriority", "type": "integer not null" },
++        { "name": "o_comment", "type": "varchar(79) not null" }
++      ],
++      "primary key": { "column": "o_orderkey" },
++      "foreign keys": [ { "column": "o_custkey", "foreign table": "customer", "foreign column": "c_custkey" } ]
++    },
++    {
++      "name": "lineitem",
++      "columns": [
++        { "name": "l_orderkey", "type": "char(32) not null" },
++        { "name": "l_partkey", "type": "char(32) not null" },
++        { "name": "l_suppkey", "type": "char(32) not null" },
++        { "name": "l_linenumber", "type": "integer not null" },
++        { "name": "l_quantity", "type": "decimal(12,2) not null" },
++        { "name": "l_extendedprice", "type": "decimal(12,2) not null" },
++        { "name": "l_discount", "type": "decimal(12,2) not null" },
++        { "name": "l_tax", "type": "decimal(12,2) not null" },
++        { "name": "l_returnflag", "type": "char(1) not null" },
++        { "name": "l_linestatus", "type": "char(1) not null" },
++        { "name": "l_shipdate", "type": "date not null" },
++        { "name": "l_commitdate", "type": "date not null" },
++        { "name": "l_receiptdate", "type": "date not null" },
++        { "name": "l_shipinstruct", "type": "char(25) not null" },
++        { "name": "l_shipmode", "type": "char(10) not null" },
++        { "name": "l_comment", "type": "varchar(44) not null" }
++      ],
++      "primary key": { "columns": [ "l_orderkey", "l_linenumber" ] },
++      "foreign keys": [
++        { "column": "l_orderkey", "foreign table": "orders", "foreign column": "o_orderkey" },
++        { "column": "l_partkey", "foreign table": "part", "foreign column": "p_partkey" },
++        { "column": "l_suppkey", "foreign table": "supplier", "foreign column": "s_suppkey" },
++        {
++          "columns": [ "l_partkey", "l_suppkey" ],
++          "foreign table": "partsupp",
++          "foreign columns": [ "ps_partkey", "ps_suppkey" ]
++        }
++      ]
++    }
++  ]
++}
+diff --git a/benchmarks/tpch_uuid/tpch_uuid.py b/benchmarks/tpch_uuid/tpch_uuid.py
+new file mode 100644
+index 0000000..1b0e3a9
+--- /dev/null
++++ b/benchmarks/tpch_uuid/tpch_uuid.py
+@@ -0,0 +1,70 @@
++import argparse
++import decimal
++import os
++import pathlib
++
++from benchmarks import benchmark
++
++
++class TPCHUUID(benchmark.Benchmark):
++    """TPC-H benchmark variant with UUID strings (32 character hex) instead of integer keys."""
++
++    def __init__(self, base_dir: str, args: dict, included_queries: list[str] = None, excluded_queries: list[str] = None):
++        super().__init__(base_dir, args, included_queries, excluded_queries)
++        self.scale = args["scale"]
++        self.zipf = args["zipf"] if "zipf" in args.keys() else 0
++
++    @property
++    def path(self) -> pathlib.Path:
++        return pathlib.Path(__file__).parent.resolve()
++
++    @property
++    def name(self) -> str:
++        return "tpch_uuid"
++
++    @property
++    def queries_path(self) -> str:
++        # Reuse queries from standard TPC-H benchmark
++        tpch_path = pathlib.Path(__file__).parent.parent / "tpch"
++        return os.path.join(tpch_path, "queries" + ("" if self.query_dir is None else f"_{self.query_dir}"))
++
++    @property
++    def description(self) -> str:
++        return "TPC-H Benchmark with UUID String Keys"
++
++    @property
++    def unique_name(self) -> str:
++        return f"tpchUuidSf{self.scale}" + ("" if self.zipf == 0 else f"Skew{self.zipf}")
++
++    @property
++    def data_dir(self) -> str:
++        return os.path.join("tpch_uuid", f"sf{self.scale}" if self.zipf == 0 else f"sf{self.scale}skew{self.zipf}")
++
++    def dbgen(self):
++        script_name = f'dbgen{"" if self.zipf == 0 else "Skewed"}.sh'
++        script_path = os.path.join(self.path, script_name)
++        command = f'{script_path} {self.scale}{"" if self.zipf == 0 else " " + str(self.zipf)}'
++        self._load_with_command(command)
++
++    def empty(self) -> bool:
++        return self.scale == 0
++
++
++class TPCHUUIDDescription(benchmark.BenchmarkDescription):
++    @staticmethod
++    def get_name() -> str:
++        return "tpch_uuid"
++
++    @staticmethod
++    def get_description() -> str:
++        return "TPC-H Benchmark with UUID String Keys"
++
++    @staticmethod
++    def add_arguments(parser: argparse.ArgumentParser):
++        benchmark.BenchmarkDescription.add_arguments(parser)
++        parser.add_argument("-s", "--scale", dest="scale", type=decimal.Decimal, default=1, help="scale factor (default: 1)")
++        parser.add_argument("-z", "--zipf", dest="zipf", type=decimal.Decimal, default=0, help="zipfian skew (default: 0)")
++
++    @staticmethod
++    def instantiate(base_dir: str, args: dict, included_queries: list[str] = None, excluded_queries: list[str] = None) -> benchmark.Benchmark:
++        return TPCHUUID(base_dir, args, included_queries, excluded_queries)

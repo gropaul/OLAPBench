@@ -1,6 +1,6 @@
 title: DuckDB Test
 repetitions: 5
-warmup: 0
+warmup: 1
 timeout: 1
 global_timeout: 1
 fetch_result: true
@@ -26,3 +26,6 @@ systems:
 benchmarks:
   - name: tpch
     scale: 1
+  - name: tpch_uuid
+    scale: 1
+
