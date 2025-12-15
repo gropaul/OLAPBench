@@ -1,8 +1,7 @@
 title: DuckDB Test
 repetitions: 5
 warmup: 1
-timeout: 1
-global_timeout: 1
+timeout: 20
 fetch_result: true
 query_plan:
   retrieve: true
