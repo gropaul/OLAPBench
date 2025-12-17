@@ -13,18 +13,6 @@ systems:
     parameter:
       version:
         - "latest"
-  - title: Umbra ${version}
-    dbms: umbra
-    parameter:
-      version:
-        - "latest"
-    settings:
-      usedirectio: true
-  - title: ClickHouse ${version}
-    dbms: clickhouse
-    parameter:
-      version:
-        - "latest"
 benchmarks:
   - name: tpch
     scale: 1

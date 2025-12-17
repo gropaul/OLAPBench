@@ -1,0 +1,344 @@
+{
+  "_label": "Result",
+  "_attrs": {
+    "operator_id": -1,
+    "exact_cardinality": 100,
+    "system_representation": "[\"// added by benchy\"]"
+  },
+  "_children": [
+    {
+      "_label": "CustomOperator",
+      "_attrs": {
+        "name": "TopN",
+        "exact_cardinality": 100,
+        "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 10800, \"operator_name\": \"TOP_N\", \"cpu_time\": 0.0, \"extra_info\": {\"Top\": \"100\", \"Order By\": [\"memory.public.supplier.s_acctbal DESC\", \"memory.public.nation.n_name ASC\", \"memory.public.supplier.s_name ASC\", \"memory.public.part.p_partkey ASC\"]}, \"cumulative_cardinality\": 0, \"operator_type\": \"TOP_N\", \"operator_cardinality\": 100, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 0.001153999}]"
+      },
+      "_children": [
+        {
+          "_label": "CustomOperator",
+          "_attrs": {
+            "operator_id": 1,
+            "name": "Projection",
+            "estimated_cardinality": 3425,
+            "exact_cardinality": 460,
+            "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 49680, \"operator_name\": \"PROJECTION\", \"cpu_time\": 0.0, \"extra_info\": {\"Projections\": [\"s_acctbal\", \"s_name\", \"n_name\", \"p_partkey\", \"p_mfgr\", \"s_address\", \"s_phone\", \"s_comment\"], \"Estimated Cardinality\": \"3425\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"PROJECTION\", \"operator_cardinality\": 460, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 1.583e-06}]"
+          },
+          "_children": [
+            {
+              "_label": "CustomOperator",
+              "_attrs": {
+                "operator_id": 2,
+                "name": "Projection",
+                "estimated_cardinality": 3425,
+                "exact_cardinality": 460,
+                "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 49680, \"operator_name\": \"PROJECTION\", \"cpu_time\": 0.0, \"extra_info\": {\"Projections\": [\"#1\", \"#2\", \"#3\", \"#4\", \"#5\", \"#6\", \"#7\", \"#8\"], \"Estimated Cardinality\": \"3425\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"PROJECTION\", \"operator_cardinality\": 460, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 2.081e-06}]"
+              },
+              "_children": [
+                {
+                  "_label": "Select",
+                  "_attrs": {
+                    "operator_id": 3,
+                    "estimated_cardinality": 3425,
+                    "exact_cardinality": 460,
+                    "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 57040, \"operator_name\": \"FILTER\", \"cpu_time\": 0.0, \"extra_info\": {\"Expression\": \"(ps_supplycost = SUBQUERY)\", \"Estimated Cardinality\": \"3425\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"FILTER\", \"operator_cardinality\": 460, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 4.0082e-05}]"
+                  },
+                  "_children": [
+                    {
+                      "_label": "Join",
+                      "_attrs": {
+                        "operator_id": 4,
+                        "type": "rightouter",
+                        "estimated_cardinality": 0,
+                        "exact_cardinality": 0,
+                        "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 0, \"operator_name\": \"LEFT_DELIM_JOIN\", \"cpu_time\": 0.0, \"extra_info\": {\"Join Type\": \"LEFT\", \"Conditions\": \"p_partkey IS NOT DISTINCT FROM p_partkey\", \"Estimated Cardinality\": \"0\", \"Delim Index\": \"1\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"LEFT_DELIM_JOIN\", \"operator_cardinality\": 0, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 0.000583708}]"
+                      },
+                      "_children": [
+                        {
+                          "_label": "Join",
+                          "_attrs": {
+                            "operator_id": 5,
+                            "type": "inner",
+                            "estimated_cardinality": 3425,
+                            "exact_cardinality": 642,
+                            "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 74472, \"operator_name\": \"HASH_JOIN\", \"cpu_time\": 0.0, \"extra_info\": {\"Join Type\": \"INNER\", \"Conditions\": \"ps_suppkey = s_suppkey\", \"Estimated Cardinality\": \"3425\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_JOIN\", \"operator_cardinality\": 642, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 0.0002615830000000001}]"
+                          },
+                          "_children": [
+                            {
+                              "_label": "Join",
+                              "_attrs": {
+                                "operator_id": 6,
+                                "type": "inner",
+                                "estimated_cardinality": 17811,
+                                "exact_cardinality": 2987,
+                                "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 95584, \"operator_name\": \"HASH_JOIN\", \"cpu_time\": 0.0, \"extra_info\": {\"Join Type\": \"INNER\", \"Conditions\": \"ps_partkey = p_partkey\", \"Estimated Cardinality\": \"17811\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_JOIN\", \"operator_cardinality\": 2987, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 0.0017740059999999998}]"
+                              },
+                              "_children": [
+                                {
+                                  "_label": "TableScan",
+                                  "_attrs": {
+                                    "operator_id": 7,
+                                    "estimated_cardinality": 800000,
+                                    "exact_cardinality": 797426,
+                                    "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 12758816, \"operator_name\": \"SEQ_SCAN \", \"cpu_time\": 0.0, \"extra_info\": {\"Table\": \"partsupp\", \"Type\": \"Sequential Scan\", \"Projections\": [\"ps_partkey\", \"ps_suppkey\", \"ps_supplycost\"], \"Estimated Cardinality\": \"800000\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"TABLE_SCAN\", \"operator_cardinality\": 797426, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 5600000, \"operator_timing\": 0.001389652}]"
+                                  },
+                                  "_children": []
+                                },
+                                {
+                                  "_label": "TableScan",
+                                  "_attrs": {
+                                    "operator_id": 8,
+                                    "estimated_cardinality": 4445,
+                                    "exact_cardinality": 747,
+                                    "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 14940, \"operator_name\": \"SEQ_SCAN \", \"cpu_time\": 0.0, \"extra_info\": {\"Table\": \"part\", \"Type\": \"Sequential Scan\", \"Projections\": [\"p_partkey\", \"p_mfgr\"], \"Filters\": [\"p_size=15\", \"suffix(p_type, 'BRASS')\"], \"Estimated Cardinality\": \"4445\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"TABLE_SCAN\", \"operator_cardinality\": 747, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 400000, \"operator_timing\": 0.000958088}]"
+                                  },
+                                  "_children": []
+                                }
+                              ]
+                            },
+                            {
+                              "_label": "Join",
+                              "_attrs": {
+                                "operator_id": 9,
+                                "type": "inner",
+                                "estimated_cardinality": 1923,
+                                "exact_cardinality": 1987,
+                                "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 182804, \"operator_name\": \"HASH_JOIN\", \"cpu_time\": 0.0, \"extra_info\": {\"Join Type\": \"INNER\", \"Conditions\": \"s_nationkey = n_nationkey\", \"Estimated Cardinality\": \"1923\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_JOIN\", \"operator_cardinality\": 1987, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 4.8877e-05}]"
+                              },
+                              "_children": [
+                                {
+                                  "_label": "TableScan",
+                                  "_attrs": {
+                                    "operator_id": 10,
+                                    "estimated_cardinality": 10000,
+                                    "exact_cardinality": 7170,
+                                    "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 573600, \"operator_name\": \"SEQ_SCAN \", \"cpu_time\": 0.0, \"extra_info\": {\"Table\": \"supplier\", \"Type\": \"Sequential Scan\", \"Projections\": [\"s_suppkey\", \"s_nationkey\", \"s_acctbal\", \"s_name\", \"s_address\", \"s_phone\", \"s_comment\"], \"Estimated Cardinality\": \"10000\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"TABLE_SCAN\", \"operator_cardinality\": 7170, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 10000, \"operator_timing\": 9.675e-05}]"
+                                  },
+                                  "_children": []
+                                },
+                                {
+                                  "_label": "Join",
+                                  "_attrs": {
+                                    "operator_id": 11,
+                                    "type": "inner",
+                                    "estimated_cardinality": 5,
+                                    "exact_cardinality": 5,
+                                    "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 120, \"operator_name\": \"HASH_JOIN\", \"cpu_time\": 0.0, \"extra_info\": {\"Join Type\": \"INNER\", \"Conditions\": \"n_regionkey = r_regionkey\", \"Estimated Cardinality\": \"5\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_JOIN\", \"operator_cardinality\": 5, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 1.454e-05}]"
+                                  },
+                                  "_children": [
+                                    {
+                                      "_label": "TableScan",
+                                      "_attrs": {
+                                        "operator_id": 12,
+                                        "estimated_cardinality": 25,
+                                        "exact_cardinality": 5,
+                                        "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 120, \"operator_name\": \"SEQ_SCAN \", \"cpu_time\": 0.0, \"extra_info\": {\"Table\": \"nation\", \"Type\": \"Sequential Scan\", \"Projections\": [\"n_nationkey\", \"n_regionkey\", \"n_name\"], \"Estimated Cardinality\": \"25\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"TABLE_SCAN\", \"operator_cardinality\": 5, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 25, \"operator_timing\": 8.167e-06}]"
+                                      },
+                                      "_children": []
+                                    },
+                                    {
+                                      "_label": "TableScan",
+                                      "_attrs": {
+                                        "operator_id": 13,
+                                        "estimated_cardinality": 1,
+                                        "exact_cardinality": 1,
+                                        "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 4, \"operator_name\": \"SEQ_SCAN \", \"cpu_time\": 0.0, \"extra_info\": {\"Table\": \"region\", \"Type\": \"Sequential Scan\", \"Projections\": \"r_regionkey\", \"Filters\": \"r_name='EUROPE'\", \"Estimated Cardinality\": \"1\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"TABLE_SCAN\", \"operator_cardinality\": 1, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 5, \"operator_timing\": 7.292e-06}]"
+                                      },
+                                      "_children": []
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_label": "Join",
+                          "_attrs": {
+                            "operator_id": 14,
+                            "type": "rightouter",
+                            "estimated_cardinality": 0,
+                            "exact_cardinality": 642,
+                            "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 79608, \"operator_name\": \"HASH_JOIN\", \"cpu_time\": 0.0, \"extra_info\": {\"Join Type\": \"LEFT\", \"Conditions\": \"p_partkey IS NOT DISTINCT FROM p_partkey\", \"Estimated Cardinality\": \"0\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_JOIN\", \"operator_cardinality\": 642, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 0.000212999}]"
+                          },
+                          "_children": [
+                            {
+                              "_label": "InlineTable",
+                              "_attrs": {
+                                "operator_id": 15,
+                                "estimated_cardinality": 0,
+                                "exact_cardinality": 642,
+                                "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 74472, \"operator_name\": \"COLUMN_DATA_SCAN\", \"cpu_time\": 0.0, \"extra_info\": {\"Estimated Cardinality\": \"0\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"COLUMN_DATA_SCAN\", \"operator_cardinality\": 642, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 1.2917e-05}]"
+                              },
+                              "_children": []
+                            },
+                            {
+                              "_label": "CustomOperator",
+                              "_attrs": {
+                                "operator_id": 16,
+                                "name": "Projection",
+                                "estimated_cardinality": 1308,
+                                "exact_cardinality": 460,
+                                "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 5520, \"operator_name\": \"PROJECTION\", \"cpu_time\": 0.0, \"extra_info\": {\"Projections\": [\"min(ps_supplycost)\", \"p_partkey\"], \"Estimated Cardinality\": \"1308\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"PROJECTION\", \"operator_cardinality\": 460, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 3.502e-06}]"
+                              },
+                              "_children": [
+                                {
+                                  "_label": "GroupBy",
+                                  "_attrs": {
+                                    "operator_id": 17,
+                                    "method": "hash",
+                                    "estimated_cardinality": 1308,
+                                    "exact_cardinality": 460,
+                                    "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 5520, \"operator_name\": \"HASH_GROUP_BY\", \"cpu_time\": 0.0, \"extra_info\": {\"Groups\": \"#0\", \"Aggregates\": \"min(#1)\", \"Estimated Cardinality\": \"1308\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_GROUP_BY\", \"operator_cardinality\": 460, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 0.0007190419999999999}]"
+                                  },
+                                  "_children": [
+                                    {
+                                      "_label": "CustomOperator",
+                                      "_attrs": {
+                                        "operator_id": 18,
+                                        "name": "Projection",
+                                        "estimated_cardinality": 2616,
+                                        "exact_cardinality": 642,
+                                        "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 7704, \"operator_name\": \"PROJECTION\", \"cpu_time\": 0.0, \"extra_info\": {\"Projections\": [\"p_partkey\", \"ps_supplycost\"], \"Estimated Cardinality\": \"2616\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"PROJECTION\", \"operator_cardinality\": 642, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 1.083e-06}]"
+                                      },
+                                      "_children": [
+                                        {
+                                          "_label": "CustomOperator",
+                                          "_attrs": {
+                                            "operator_id": 19,
+                                            "name": "Projection",
+                                            "estimated_cardinality": 2616,
+                                            "exact_cardinality": 642,
+                                            "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 10272, \"operator_name\": \"PROJECTION\", \"cpu_time\": 0.0, \"extra_info\": {\"Projections\": [\"#0\", \"#1\", \"__internal_compress_integral_usmallint(#2, 1)\", \"__internal_compress_integral_utinyint(#3, 0)\", \"__internal_compress_integral_utinyint(#4, 0)\"], \"Estimated Cardinality\": \"2616\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"PROJECTION\", \"operator_cardinality\": 642, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 1.5207999999999999e-05}]"
+                                          },
+                                          "_children": [
+                                            {
+                                              "_label": "Join",
+                                              "_attrs": {
+                                                "operator_id": 20,
+                                                "type": "inner",
+                                                "estimated_cardinality": 2616,
+                                                "exact_cardinality": 642,
+                                                "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 15408, \"operator_name\": \"HASH_JOIN\", \"cpu_time\": 0.0, \"extra_info\": {\"Join Type\": \"INNER\", \"Conditions\": \"ps_suppkey = s_suppkey\", \"Estimated Cardinality\": \"2616\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_JOIN\", \"operator_cardinality\": 642, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 8.5086e-05}]"
+                                              },
+                                              "_children": [
+                                                {
+                                                  "_label": "Join",
+                                                  "_attrs": {
+                                                    "operator_id": 21,
+                                                    "type": "inner",
+                                                    "estimated_cardinality": 13604,
+                                                    "exact_cardinality": 1840,
+                                                    "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 36800, \"operator_name\": \"HASH_JOIN\", \"cpu_time\": 0.0, \"extra_info\": {\"Join Type\": \"INNER\", \"Conditions\": \"ps_partkey = p_partkey\", \"Estimated Cardinality\": \"13604\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_JOIN\", \"operator_cardinality\": 1840, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 0.001040499}]"
+                                                  },
+                                                  "_children": [
+                                                    {
+                                                      "_label": "TableScan",
+                                                      "_attrs": {
+                                                        "operator_id": 22,
+                                                        "estimated_cardinality": 800000,
+                                                        "exact_cardinality": 796446,
+                                                        "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 12743136, \"operator_name\": \"SEQ_SCAN \", \"cpu_time\": 0.0, \"extra_info\": {\"Table\": \"partsupp\", \"Type\": \"Sequential Scan\", \"Projections\": [\"ps_partkey\", \"ps_suppkey\", \"ps_supplycost\"], \"Estimated Cardinality\": \"800000\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"TABLE_SCAN\", \"operator_cardinality\": 796446, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 5600000, \"operator_timing\": 0.0010790930000000002}]"
+                                                      },
+                                                      "_children": []
+                                                    },
+                                                    {
+                                                      "_label": "TableScan",
+                                                      "_attrs": {
+                                                        "operator_id": 23,
+                                                        "estimated_cardinality": 3395,
+                                                        "exact_cardinality": 0,
+                                                        "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 0, \"operator_name\": \"DELIM_SCAN\", \"cpu_time\": 0.0, \"extra_info\": {\"Delim Index\": \"1\", \"Estimated Cardinality\": \"3395\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"DELIM_SCAN\", \"operator_cardinality\": 0, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 0.0}]"
+                                                      },
+                                                      "_children": []
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "_label": "Join",
+                                                  "_attrs": {
+                                                    "operator_id": 24,
+                                                    "type": "inner",
+                                                    "estimated_cardinality": 1923,
+                                                    "exact_cardinality": 1987,
+                                                    "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 23844, \"operator_name\": \"HASH_JOIN\", \"cpu_time\": 0.0, \"extra_info\": {\"Join Type\": \"INNER\", \"Conditions\": \"s_nationkey = n_nationkey\", \"Estimated Cardinality\": \"1923\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_JOIN\", \"operator_cardinality\": 1987, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 3.9250000000000005e-05}]"
+                                                  },
+                                                  "_children": [
+                                                    {
+                                                      "_label": "TableScan",
+                                                      "_attrs": {
+                                                        "operator_id": 25,
+                                                        "estimated_cardinality": 10000,
+                                                        "exact_cardinality": 7170,
+                                                        "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 57360, \"operator_name\": \"SEQ_SCAN \", \"cpu_time\": 0.0, \"extra_info\": {\"Table\": \"supplier\", \"Type\": \"Sequential Scan\", \"Projections\": [\"s_suppkey\", \"s_nationkey\"], \"Estimated Cardinality\": \"10000\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"TABLE_SCAN\", \"operator_cardinality\": 7170, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 10000, \"operator_timing\": 2.4292000000000004e-05}]"
+                                                      },
+                                                      "_children": []
+                                                    },
+                                                    {
+                                                      "_label": "Join",
+                                                      "_attrs": {
+                                                        "operator_id": 26,
+                                                        "type": "inner",
+                                                        "estimated_cardinality": 5,
+                                                        "exact_cardinality": 5,
+                                                        "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 40, \"operator_name\": \"HASH_JOIN\", \"cpu_time\": 0.0, \"extra_info\": {\"Join Type\": \"INNER\", \"Conditions\": \"n_regionkey = r_regionkey\", \"Estimated Cardinality\": \"5\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_JOIN\", \"operator_cardinality\": 5, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 3.8667e-05}]"
+                                                      },
+                                                      "_children": [
+                                                        {
+                                                          "_label": "TableScan",
+                                                          "_attrs": {
+                                                            "operator_id": 27,
+                                                            "estimated_cardinality": 25,
+                                                            "exact_cardinality": 5,
+                                                            "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 40, \"operator_name\": \"SEQ_SCAN \", \"cpu_time\": 0.0, \"extra_info\": {\"Table\": \"nation\", \"Type\": \"Sequential Scan\", \"Projections\": [\"n_nationkey\", \"n_regionkey\"], \"Estimated Cardinality\": \"25\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"TABLE_SCAN\", \"operator_cardinality\": 5, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 25, \"operator_timing\": 7.25e-06}]"
+                                                          },
+                                                          "_children": []
+                                                        },
+                                                        {
+                                                          "_label": "TableScan",
+                                                          "_attrs": {
+                                                            "operator_id": 28,
+                                                            "estimated_cardinality": 1,
+                                                            "exact_cardinality": 1,
+                                                            "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 4, \"operator_name\": \"SEQ_SCAN \", \"cpu_time\": 0.0, \"extra_info\": {\"Table\": \"region\", \"Type\": \"Sequential Scan\", \"Projections\": \"r_regionkey\", \"Filters\": \"r_name='EUROPE'\", \"Estimated Cardinality\": \"1\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"TABLE_SCAN\", \"operator_cardinality\": 1, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 5, \"operator_timing\": 7.1249999999999995e-06}]"
+                                                          },
+                                                          "_children": []
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "_label": "GroupBy",
+                          "_attrs": {
+                            "operator_id": 29,
+                            "method": "hash",
+                            "estimated_cardinality": 3395,
+                            "exact_cardinality": 460,
+                            "system_representation": "[{\"total_bytes_written\": 0, \"total_bytes_read\": 0, \"result_set_size\": 1840, \"operator_name\": \"HASH_GROUP_BY\", \"cpu_time\": 0.0, \"extra_info\": {\"Groups\": \"#1\", \"Aggregates\": \"\", \"Estimated Cardinality\": \"3395\"}, \"cumulative_cardinality\": 0, \"operator_type\": \"HASH_GROUP_BY\", \"operator_cardinality\": 460, \"cumulative_rows_scanned\": 0, \"operator_rows_scanned\": 0, \"operator_timing\": 0.000456167}]"
+                          },
+                          "_children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
