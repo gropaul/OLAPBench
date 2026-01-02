@@ -21,7 +21,7 @@ if [ ! -d "$TPCH_DIR" ] || [ -z "$(ls -A "$TPCH_DIR" 2>/dev/null)" ]; then
 
     cd tpch-kit-852ad0a5ee31ebefeed884cea4188781dd9613a3/dbgen
     rm -rf ./*.tbl
-    MACHINE=LINUX make -sj "$(nproc)" dbgen 2>/dev/null
+    make -sj 4 dbgen 2>/dev/null
     ./dbgen -f -s "$SF"
     for table in ./*.tbl; do
       sed 's/|$//' "$table" >"../../sf$SF/$table"

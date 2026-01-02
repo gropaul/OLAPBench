@@ -92,6 +92,7 @@ def create_table_statements_apollo(schema: dict) -> [str]:
 def escape(s: str):
     return f"E'{s}'" if "\\" in s else f"'{s}'"
 
+MAX_ROWS_PER_COMMAND = 1000000
 
 def copy_statements_postgres(schema: dict, data_dir: str, supports_text: bool = True) -> [str]:
     delimiter = schema["delimiter"]
@@ -102,12 +103,28 @@ def copy_statements_postgres(schema: dict, data_dir: str, supports_text: bool = 
     csv_escape = f", escape '{schema['csv_escape']}'" if format == "csv" and "csv_escape" in schema else ""
     header = ", header" if "header" in schema and schema["header"] else ""
 
+
     statements = []
     for table in schema["tables"]:
         if table.get("initially empty", False):
             continue
+        # get the number of rows in the file
+        csv_path = os.path.join('/Users/paul/workspace/OLAPBench/data', table["file"])
         statements.append(f'copy {table["name"]} from \'{os.path.join(data_dir, table["file"])}\' with (delimiter \'{delimiter}\', format {format}{null}{quote}{csv_escape}{header});')
+        continue
 
+        number_of_rows = sum(1 for line in open(csv_path, 'r', encoding='utf-8'))
+        for start_row in range(0, number_of_rows, MAX_ROWS_PER_COMMAND):
+            end_row = min(start_row + MAX_ROWS_PER_COMMAND, number_of_rows)
+            limit = end_row - start_row
+            if start_row == 0:
+                query_head = f'CREATE TABLE {table["name"]} AS '
+            else:
+                query_head = f'INSERT INTO {table["name"]} '
+
+            select = f'SELECT * from \'{os.path.join(data_dir, table["file"])}\' with (delimiter \'{delimiter}\', format {format}{null}{quote}{csv_escape}{header}) offset {start_row} limit {end_row - start_row};'
+            sql = query_head + select
+            print(sql)
     return statements
 
 

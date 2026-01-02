@@ -13,9 +13,21 @@ systems:
     parameter:
       version:
         - "latest"
+  - title: Postgres ${version}
+    dbms: postgres
+    disabled: false
+    parameter:
+      version:
+        - "latest"
+#  - title: Umbra ${version}
+#    dbms: umbra
+#    disabled: false
+#    parameter:
+#      version:
+#        - "latest"
 benchmarks:
   - name: tpch
-    scale: 1
+    scale: 3
   - name: tpch_uuid
-    scale: 1
+    scale: 3
 

@@ -247,6 +247,7 @@ class DBMS(ABC):
                 if table in non_empty_tables:
                     for _ in range(int(len(statements) / len(non_empty_tables))):
                         logger.log_verbose_sql(statements[j])
+                        print(statements[j])
                         output = self._execute(statements[j], False)
                         if output.state != Result.SUCCESS:
                             logger.log_error(f'Error while loading table: {output.message}')
