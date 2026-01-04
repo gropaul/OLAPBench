@@ -19,12 +19,12 @@ systems:
     parameter:
       version:
         - "latest"
-#  - title: Umbra ${version}
-#    dbms: umbra
-#    disabled: false
-#    parameter:
-#      version:
-#        - "latest"
+  - title: Umbra ${version}
+    dbms: umbra
+    disabled: false
+    parameter:
+      version:
+        - "latest"
 benchmarks:
   - name: tpch
     scale: 1

@@ -15,13 +15,15 @@ if [ -z "$(ls -A "sf$SF")" ]; then
     else
       (
         cd tpcds-kit
-        git pull >/dev/null
       )
     fi
 
     cd tpcds-kit/tools
     rm -rf ./*.dat
-    CPPFLAGS=-Wno-implicit-int make -sj "$(nproc)" dsdgen
+
+    make clean
+    make dsdgen
+
     ./dsdgen -FORCE -SCALE "$SF"
     for table in ./*.dat; do
       sed 's/|$//' "$table" >"../../sf$SF/$table"

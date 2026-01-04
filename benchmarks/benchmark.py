@@ -139,7 +139,6 @@ def benchmarks() -> dict[str, BenchmarkDescription]:
     from benchmarks.ssb import ssb
     from benchmarks.tpcds import tpcds
     from benchmarks.tpch import tpch
-    from benchmarks.tpch_uuid import tpch_uuid
     from benchmarks.stackoverflow import stackoverflow
 
     benchmark_list = [
@@ -149,7 +148,6 @@ def benchmarks() -> dict[str, BenchmarkDescription]:
         stackoverflow.StackOverflowDescription,
         tpcds.TPCDSDescription,
         tpch.TPCHDescription,
-        tpch_uuid.TPCHUUIDDescription
     ]
     return {benchmark.get_name(): benchmark for benchmark in benchmark_list}
 
