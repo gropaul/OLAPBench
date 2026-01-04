@@ -27,7 +27,11 @@ systems:
 #        - "latest"
 benchmarks:
   - name: tpch
-    scale: 3
-  - name: tpch_uuid
-    scale: 3
-
+    scale: 1
+    id_type:
+      - "int64_sorted"
+      - "int64_random"
+      - "uuid_v4"
+      - "uuid_v7"
+      - "base64_16_bytes"
+      - "base64_32_bytes"

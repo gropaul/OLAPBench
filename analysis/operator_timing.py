@@ -6,8 +6,9 @@ from collections import defaultdict
 
 TEST_DIR = '/Users/paul/workspace/OLAPBench/test'
 
-TPCH_PATH = '/duckdb/tpchSf1.csv'
-TPCH_STRING_PATH = '/duckdb/tpchUuidSf1.csv'
+TPCH_PATH = '/duckdb/tpchSf1IdType_int64_sorted.csv'
+# TPCH_STRING_PATH = '/duckdb/tpchSf1IdType_int64_random.csv'
+TPCH_STRING_PATH = '/duckdb/tpchSf1IdType_uuid_v4.csv'
 OUTPUT_CSV = 'analysis/operator_timings.csv'
 
 

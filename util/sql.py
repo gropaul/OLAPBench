@@ -95,25 +95,24 @@ def escape(s: str):
 MAX_ROWS_PER_COMMAND = 1000000
 
 def copy_statements_postgres(schema: dict, data_dir: str, supports_text: bool = True) -> [str]:
-    delimiter = schema["delimiter"]
     format = schema["format"] if supports_text or schema["format"] != "text" else "csv"
 
     null = f", null {escape(schema['null'])}" if "null" in schema else ""
     quote = f", quote {escape(schema['quote'])}" if "quote" in schema else ""
     csv_escape = f", escape '{schema['csv_escape']}'" if format == "csv" and "csv_escape" in schema else ""
     header = ", header" if "header" in schema and schema["header"] else ""
-
+    delimiter = f", delimiter {escape(schema['delimiter'])} " if format in ['csv', 'text'] else ""
 
     statements = []
     for table in schema["tables"]:
         if table.get("initially empty", False):
             continue
         # get the number of rows in the file
-        csv_path = os.path.join('/Users/paul/workspace/OLAPBench/data', table["file"])
-        statements.append(f'copy {table["name"]} from \'{os.path.join(data_dir, table["file"])}\' with (delimiter \'{delimiter}\', format {format}{null}{quote}{csv_escape}{header});')
+        file_path = os.path.join('/Users/paul/workspace/OLAPBench/data', table["file"])
+        statements.append(f'copy {table["name"]} from \'{os.path.join(data_dir, table["file"])}\' with (format {format}{delimiter}{null}{quote}{csv_escape}{header});')
         continue
 
-        number_of_rows = sum(1 for line in open(csv_path, 'r', encoding='utf-8'))
+        number_of_rows = sum(1 for line in open(file_path, 'r', encoding='utf-8'))
         for start_row in range(0, number_of_rows, MAX_ROWS_PER_COMMAND):
             end_row = min(start_row + MAX_ROWS_PER_COMMAND, number_of_rows)
             limit = end_row - start_row

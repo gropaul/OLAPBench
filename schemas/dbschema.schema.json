@@ -74,8 +74,12 @@
     },
     "format": {
       "type": "string",
-      "enum": [ "text", "csv" ],
+      "enum": [ "text", "csv", "parquet" ],
       "default": "text"
+    },
+    "quote": {
+      "type": "string",
+      "default": "\""
     },
     "csv_escape": {
       "type": "string",
@@ -96,5 +100,5 @@
     "additional_sql_insert": { "type": "array", "items": { "$ref": "#/definitions/query" } }
   },
   "additionalProperties": false,
-  "required": [ "file_ending", "delimiter", "format", "tables" ]
+  "required": [ "file_ending", "format", "tables" ]
 }

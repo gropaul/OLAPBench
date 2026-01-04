@@ -2,6 +2,7 @@ import argparse
 import os
 import pathlib
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import natsort
 from util import schemajson, logger
@@ -63,8 +64,10 @@ class Benchmark(ABC):
     def empty(self) -> bool:
         return False
 
-    def get_schema(self, primary_key: bool = True, foreign_keys: bool = False) -> dict:
-        schema = schemajson.load(os.path.join(self.path, self.name + '.dbschema.json'), "dbschema.schema.json")
+    def get_schema(self, primary_key: bool = True, foreign_keys: bool = False, path: Optional[str] = None) -> dict:
+        if path is None:
+            path = os.path.join(self.path, self.name + '.dbschema.json')
+        schema = schemajson.load(path, "dbschema.schema.json")
         for table in schema["tables"]:
             table["file"] = os.path.join(self.data_dir, table["name"] + '.' + schema["file_ending"])
             if "_eval" in table:
