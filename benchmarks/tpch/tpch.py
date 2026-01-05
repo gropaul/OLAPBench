@@ -45,6 +45,10 @@ class TPCH(benchmark.Benchmark):
     def _post_process(self):
         create_string_id_data(self, 'benchmarks/tpch/tpch.dbschema.json', TPC_H_TABLE_ID_COLUMNS)
 
+    def post_process_queries(self, queries: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        return queries
+
+
     def empty(self) -> bool:
         return self.scale == 0
 
