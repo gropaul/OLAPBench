@@ -10,6 +10,7 @@ output: test/duckdb/
 systems:
   - title: DuckDB ${version}
     dbms: duckdb
+    disabled: false
     parameter:
       version:
         - "latest"
@@ -25,9 +26,24 @@ systems:
     parameter:
       version:
         - "latest"
+  - title: ClickHouse ${version}
+    dbms: clickhouse
+    disabled: true
+    parameter:
+      version:
+        - "latest"
 benchmarks:
   - name: tpch
-    scale: 1
+    scale: 10
+    id_type:
+      - "int64_sorted"
+      - "int64_random"
+      - "uuid_v4"
+      - "uuid_v7"
+      - "base64_16_bytes"
+      - "base64_32_bytes"
+  - name: tpcds
+    scale: 10
     id_type:
       - "int64_sorted"
       - "int64_random"

@@ -85,6 +85,12 @@ class Benchmark(ABC):
 
         return schema
 
+
+    @abstractmethod
+    def post_process_queries(self, queries: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        return queries
+
+
     def queries(self, dbms_name: str) -> list[tuple[str, str]]:
         result = []
 
@@ -116,7 +122,7 @@ class Benchmark(ABC):
 
             result.append((query_file, query))
 
-        return result
+        return self.post_process_queries(result)
 
 
 class BenchmarkDescription:

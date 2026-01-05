@@ -36,28 +36,44 @@ TPC_H_TABLE_ID_COLUMNS: dict[str, list[str]] = {
 TPC_DS_TABLE_ID_COLUMNS: dict[str, list[str]] = {
     'customer_address': ['ca_address_sk'],
     'customer_demographics': ['cd_demo_sk'],
-    'date_dim': ['d_date_sk'],
+    'date_dim': [],
     'warehouse': ['w_warehouse_sk'],
     'ship_mode': ['sm_ship_mode_sk'],
-    'time_dim': ['t_time_sk'],
+    'time_dim': [],
     'reason': ['r_reason_sk'],
     'income_band': ['ib_income_band_sk'],
-    'household_demographics': ['hd_demo_sk'],
+    'household_demographics': ['hd_demo_sk', 'hd_income_band_sk'],
     'item': ['i_item_sk'],
     'store': ['s_store_sk'],
     'call_center': ['cc_call_center_sk'],
-    'customer': ['c_customer_sk'],
+    'customer': ['c_customer_sk', 'c_current_cdemo_sk', 'c_current_hdemo_sk', 'c_current_addr_sk'],
     'web_site': ['web_site_sk'],
-    'web_page': ['wp_web_page_sk'],
-    'promotion': ['p_promo_sk'],
+    'web_page': ['wp_web_page_sk', 'wp_customer_sk'],
+    'promotion': ['p_promo_sk', 'p_item_sk'],
     'catalog_page': ['cp_catalog_page_sk'],
-    'inventory': ['inv_date_sk', 'inv_item_sk', 'inv_warehouse_sk'],
-    'web_sales': ['ws_item_sk', 'ws_order_number'],
-    'catalog_sales': ['cs_item_sk', 'cs_order_number'],
-    'store_sales': ['ss_item_sk', 'ss_ticket_number'],
-    'web_returns': ['wr_item_sk', 'wr_order_number'],
-    'catalog_returns': ['cr_item_sk', 'cr_order_number'],
-    'store_returns': ['sr_item_sk', 'sr_ticket_number'],
+    'inventory': ['inv_item_sk', 'inv_warehouse_sk', 'inv_item_sk', 'inv_warehouse_sk'],
+    'web_sales': ['ws_item_sk', 'ws_order_number', 'ws_item_sk', 'ws_bill_customer_sk', 'ws_bill_cdemo_sk',
+                  'ws_bill_hdemo_sk', 'ws_bill_addr_sk', 'ws_ship_customer_sk', 'ws_ship_cdemo_sk', 'ws_ship_hdemo_sk',
+                  'ws_ship_addr_sk', 'ws_web_page_sk', 'ws_web_site_sk', 'ws_ship_mode_sk', 'ws_warehouse_sk',
+                  'ws_promo_sk'],
+    'catalog_sales': ['cs_item_sk', 'cs_order_number', 'cs_bill_customer_sk', 'cs_bill_cdemo_sk', 'cs_bill_hdemo_sk',
+                      'cs_bill_addr_sk', 'cs_ship_customer_sk', 'cs_ship_cdemo_sk', 'cs_ship_hdemo_sk',
+                      'cs_ship_addr_sk', 'cs_call_center_sk', 'cs_catalog_page_sk', 'cs_ship_mode_sk',
+                      'cs_warehouse_sk', 'cs_item_sk', 'cs_promo_sk'],
+    'store_sales': ['ss_item_sk', 'ss_ticket_number', 'ss_item_sk', 'ss_customer_sk', 'ss_cdemo_sk', 'ss_hdemo_sk',
+                    'ss_addr_sk', 'ss_store_sk', 'ss_promo_sk'],
+    'web_returns': ['wr_item_sk', 'wr_order_number', 'wr_item_sk', 'wr_refunded_customer_sk', 'wr_refunded_cdemo_sk',
+                    'wr_refunded_hdemo_sk', 'wr_refunded_addr_sk', 'wr_returning_customer_sk', 'wr_returning_cdemo_sk',
+                    'wr_returning_hdemo_sk', 'wr_returning_addr_sk', 'wr_web_page_sk', 'wr_reason_sk', 'wr_item_sk',
+                    'wr_order_number'],
+    'catalog_returns': ['cr_item_sk', 'cr_order_number', 'cr_refunded_customer_sk', 'cr_refunded_cdemo_sk',
+                        'cr_refunded_hdemo_sk', 'cr_refunded_addr_sk', 'cr_returning_customer_sk',
+                        'cr_returning_cdemo_sk', 'cr_returning_hdemo_sk', 'cr_returning_addr_sk', 'cr_call_center_sk',
+                        'cr_catalog_page_sk', 'cr_ship_mode_sk', 'cr_warehouse_sk', 'cr_reason_sk', 'cr_item_sk',
+                        'cr_order_number'],
+    'store_returns': ['sr_item_sk', 'sr_ticket_number', 'sr_item_sk', 'sr_customer_sk', 'sr_cdemo_sk', 'sr_hdemo_sk',
+                      'sr_addr_sk', 'sr_store_sk', 'sr_reason_sk', 'sr_item_sk', 'sr_ticket_number'],
+
 }
 
 
@@ -77,7 +93,7 @@ def create_string_id_data(benchmark, base_schema_path: str, table_columns_map: D
     for stmt in statements:
         con.execute(stmt)
 
-    for table, columns in TPC_H_TABLE_ID_COLUMNS.items():
+    for table, columns in table_columns_map.items():
         table_path = os.path.join("data", benchmark.data_dir, f"{table}.tbl")
         # first copy to .tbl to a temporary table with all original columns
         copy_to_temp = f"""
@@ -132,10 +148,9 @@ def create_new_schemas(base_schema_path: str, table_columns_map: Dict):
                     else:
                         column['type'] = 'VARCHAR'
             table['columns'] = columns
-        new_path = f'benchmarks/tpch/tpch_{id_type}.dbschema.json'
+        new_path = base_schema_path.replace('.dbschema.json', f'_{id_type}.dbschema.json')
         with open(new_path, 'w') as f:
             json.dump(schema, f, indent=2)
-
 
 
 def _hash_bytes(original_id: int, n_bytes: int) -> bytes:
@@ -146,7 +161,7 @@ def _uuid_v7_from_int(original_id: int) -> str:
     # --- 1. Deterministic timestamp (ms) ---
     # Anchor around a fixed epoch to keep ordering stable
     BASE_TS_MS = 1700000000000  # arbitrary fixed base (2023-11)
-    ts_ms = BASE_TS_MS + (original_id & ((1 << 48) - 1))
+    ts_ms = BASE_TS_MS + original_id * 100 # assume records are 100ms apart
 
     # --- 2. Hash for randomness ---
     h = hashlib.blake2b(
@@ -154,7 +169,7 @@ def _uuid_v7_from_int(original_id: int) -> str:
         digest_size=16
     ).digest()
 
-    rand_a = int.from_bytes(h[0:2], "big") & 0x0FFF      # 12 bits
+    rand_a = int.from_bytes(h[0:2], "big") & 0x0FFF  # 12 bits
     rand_b = int.from_bytes(h[2:10], "big") & ((1 << 62) - 1)
 
     # --- 3. Assemble UUID fields ---
@@ -174,7 +189,6 @@ def _uuid_v7_from_int(original_id: int) -> str:
         clock_seq & 0xFF,
         node
     )))
-
 
 
 def convert_id(original_id: int, id_type: TPC_ID_TYPE):
